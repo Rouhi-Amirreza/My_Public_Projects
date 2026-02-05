@@ -363,24 +363,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - PyTorch and TensorFlow teams
 - OpenCV contributors
 
-## 📞 Contact
-
-- Project Lead: [Your Name](mailto:your.email@example.com)
-- Documentation: [https://docs.hazard-detection.io](https://docs.hazard-detection.io)
-- Issues: [GitHub Issues](https://github.com/yourusername/hazard-detection/issues)
 
 ## 🗺️ Roadmap
 
 - [x] Basic CV hazard detection
 - [x] LLM integration
 - [x] Multi-stream processing
-- [ ] Edge device optimization
-- [ ] Mobile app (iOS/Android)
-- [ ] Drone integration
-- [ ] 3D scene reconstruction
-- [ ] AR visualization
-- [ ] Blockchain audit trail
-- [ ] Federated learning support
+
 
 ---
 
