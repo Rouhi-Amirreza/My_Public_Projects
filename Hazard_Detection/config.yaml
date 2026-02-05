@@ -1,0 +1,255 @@
+# Hazard Detection System Configuration
+
+# Detection Settings
+detection:
+  # Computer Vision Model
+  cv_model: "yolov8x"  # Options: yolov8x, yolov8l, yolov8m, faster_rcnn, mask_rcnn
+
+  # LLM Model for contextual understanding
+  llm_model: "gpt-4-vision-preview"  # Options: gpt-4-vision-preview, claude-3-opus, gemini-pro-vision
+
+  # Detection thresholds
+  confidence_threshold: 0.7
+  nms_threshold: 0.45
+  max_detections: 100
+
+  # Hazard classes to detect
+  hazard_classes:
+    - fire
+    - smoke
+    - flood
+    - spill
+    - fallen_person
+    - unauthorized_access
+    - vehicle_hazard
+    - equipment_malfunction
+    - blocked_exit
+    - missing_ppe
+    - hazmat
+    - gas_leak
+
+# Processing Configuration
+processing:
+  # Video processing
+  video_fps: 30
+  frame_skip: 0  # Skip N frames between detections (0 = process all frames)
+  resize_width: 1280
+  resize_height: 720
+
+  # GPU/CPU settings
+  enable_gpu: true
+  gpu_device: 0
+  batch_size: 1
+
+  # Multi-threading
+  num_workers: 4
+  async_processing: true
+
+  # Tracking
+  enable_tracking: true
+  tracker_type: "sort"  # Options: sort, deepsort, bytetrack
+  max_age: 30
+  min_hits: 3
+
+# Alert System
+alerts:
+  enabled: true
+  min_severity: "medium"  # Only alert on medium and above
+
+  # Channels
+  channels:
+    - email
+    - webhook
+    - console
+
+  # Email configuration
+  email:
+    enabled: true
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    from_address: "alerts@hazarddetection.com"
+    from_name: "Hazard Detection System"
+    recipients:
+      - name: "Security Team"
+        email: "security@example.com"
+        severity_threshold: "high"
+      - name: "Operations"
+        email: "ops@example.com"
+        severity_threshold: "medium"
+
+  # SMS configuration
+  sms:
+    enabled: false
+    provider: "twilio"
+    account_sid: "your_account_sid"
+    auth_token: "your_auth_token"
+    from_number: "+1234567890"
+    recipients:
+      - "+1234567891"
+
+  # Webhook configuration
+  webhook:
+    enabled: true
+    url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+    retry_count: 3
+    timeout: 10
+
+  # Slack integration
+  slack:
+    enabled: false
+    webhook_url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    channel: "#hazard-alerts"
+    username: "Hazard Bot"
+    icon_emoji: ":rotating_light:"
+
+  # Escalation policy
+  escalation:
+    enabled: true
+    timeout_minutes: 5
+    max_escalations: 3
+    escalation_chain:
+      - level: 1
+        recipients: ["ops@example.com"]
+      - level: 2
+        recipients: ["security@example.com", "manager@example.com"]
+      - level: 3
+        recipients: ["cto@example.com"]
+
+# Storage Configuration
+storage:
+  # Database
+  type: "postgresql"  # Options: postgresql, mongodb, sqlite
+  host: "localhost"
+  port: 5432
+  database: "hazard_detection"
+  username: "hazard_user"
+  password: "secure_password"
+
+  # File storage
+  images:
+    save_detections: true
+    save_path: "data/detections"
+    retention_days: 30
+    format: "jpg"
+    quality: 95
+
+  videos:
+    save_recordings: false
+    save_path: "data/recordings"
+    retention_days: 7
+    codec: "mp4v"
+    fps: 30
+
+  # Logging
+  logs:
+    save_path: "logs"
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    max_size_mb: 100
+    backup_count: 5
+
+# LLM Configuration
+llm:
+  provider: "openai"  # Options: openai, anthropic, google
+
+  # OpenAI settings
+  openai:
+    api_key: "your_openai_api_key"
+    model: "gpt-4-vision-preview"
+    max_tokens: 500
+    temperature: 0.7
+
+  # Anthropic settings
+  anthropic:
+    api_key: "your_anthropic_api_key"
+    model: "claude-3-opus-20240229"
+    max_tokens: 500
+
+  # Google settings
+  google:
+    api_key: "your_google_api_key"
+    model: "gemini-pro-vision"
+
+  # Caching
+  enable_cache: true
+  cache_ttl: 3600
+
+# API Server
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  workers: 4
+
+  # Authentication
+  auth:
+    enabled: true
+    api_keys:
+      - "demo_key_123"
+      - "prod_key_456"
+
+  # CORS
+  cors:
+    enabled: true
+    allow_origins: ["*"]
+    allow_methods: ["*"]
+    allow_headers: ["*"]
+
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+
+# Dashboard
+dashboard:
+  enabled: true
+  port: 5000
+  refresh_interval: 5  # seconds
+
+  # Map integration
+  map:
+    enabled: true
+    provider: "openstreetmap"
+    default_center: [40.7128, -74.0060]  # [lat, lon]
+    default_zoom: 12
+
+# Performance
+performance:
+  # Caching
+  enable_redis: false
+  redis_host: "localhost"
+  redis_port: 6379
+
+  # Optimization
+  model_optimization: "tensorrt"  # Options: none, onnx, tensorrt, openvino
+  mixed_precision: true
+
+  # Monitoring
+  enable_profiling: false
+  metrics_port: 9090
+
+# Advanced Features
+features:
+  # Anomaly detection
+  anomaly_detection:
+    enabled: false
+    sensitivity: 0.8
+
+  # Depth estimation
+  depth_estimation:
+    enabled: false
+    model: "midas_v21"
+
+  # Scene understanding
+  scene_understanding:
+    enabled: true
+    extract_context: true
+
+  # Privacy
+  privacy:
+    blur_faces: false
+    blur_plates: false
+    anonymize_logs: false

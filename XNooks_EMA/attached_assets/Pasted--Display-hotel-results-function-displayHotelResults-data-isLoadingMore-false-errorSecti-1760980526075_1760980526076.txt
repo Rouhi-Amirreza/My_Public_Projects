@@ -1,0 +1,227 @@
+
+// Display hotel results
+function displayHotelResults(data, isLoadingMore = false) {
+    errorSection.style.display = 'none';
+    resultsSection.style.display = 'block';
+    priceInsights.innerHTML = '';
+
+    const properties = data.properties || [];
+    const ads = data.ads || [];
+    
+    // Extract check-in/check-out times and before-taxes prices from properties to apply to ads
+    const propertyDataMap = new Map();
+    const allCheckInTimes = [];
+    const allCheckOutTimes = [];
+    
+    properties.forEach(prop => {
+        if (prop.name) {
+            // Store by hotel name for matching
+            const normalizedName = prop.name.toLowerCase().trim();
+            if (prop.check_in_time || prop.check_out_time || prop.rate_per_night?.extracted_before_taxes_fees) {
+                propertyDataMap.set(normalizedName, {
+                    check_in_time: prop.check_in_time,
+                    check_out_time: prop.check_out_time,
+                    before_taxes_price: prop.rate_per_night?.extracted_before_taxes_fees
+                });
+            }
+            
+            // Collect all check-in/check-out times for finding common defaults
+            if (prop.check_in_time) allCheckInTimes.push(prop.check_in_time);
+            if (prop.check_out_time) allCheckOutTimes.push(prop.check_out_time);
+        }
+    });
+    
+    // Find most common check-in/check-out times as defaults
+    const getMostCommon = (arr) => {
+        if (arr.length === 0) return null;
+        const frequency = {};
+        arr.forEach(item => frequency[item] = (frequency[item] || 0) + 1);
+        return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+    };
+    
+    const defaultCheckInTime = getMostCommon(allCheckInTimes);
+    const defaultCheckOutTime = getMostCommon(allCheckOutTimes);
+    
+    // Apply check-in/check-out times and before-taxes prices to ads that are missing them
+    ads.forEach(ad => {
+        const normalizedName = ad.name ? ad.name.toLowerCase().trim() : '';
+        const matchingData = propertyDataMap.get(normalizedName);
+        
+        // Apply check-in/check-out times
+        if (!ad.check_in_time || !ad.check_out_time) {
+            if (matchingData) {
+                // Use times from matching property
+                if (!ad.check_in_time && matchingData.check_in_time) {
+                    ad.check_in_time = matchingData.check_in_time;
+                }
+                if (!ad.check_out_time && matchingData.check_out_time) {
+                    ad.check_out_time = matchingData.check_out_time;
+                }
+                console.log(`Applied times from matching property to ad: ${ad.name}`);
+            } else if (defaultCheckInTime || defaultCheckOutTime) {
+                // Use most common times as fallback
+                if (!ad.check_in_time && defaultCheckInTime) {
+                    ad.check_in_time = defaultCheckInTime;
+                }
+                if (!ad.check_out_time && defaultCheckOutTime) {
+                    ad.check_out_time = defaultCheckOutTime;
+                }
+                console.log(`Applied default times to ad: ${ad.name}`);
+            }
+        }
+        
+        // Apply before-taxes price if missing or same as main price
+        if (matchingData && matchingData.before_taxes_price) {
+            // Initialize rate_per_night object if it doesn't exist
+            if (!ad.rate_per_night) {
+                ad.rate_per_night = {};
+            }
+            
+            // Check if before taxes price is missing or same as the main price
+            const currentBeforeTaxes = ad.rate_per_night.extracted_before_taxes_fees;
+            const mainPrice = ad.extracted_price || ad.rate_per_night?.extracted_lowest || 0;
+            
+            if (!currentBeforeTaxes || currentBeforeTaxes === mainPrice) {
+                ad.rate_per_night.extracted_before_taxes_fees = matchingData.before_taxes_price;
+                console.log(`Applied before-taxes price ($${matchingData.before_taxes_price}) from matching property to ad: ${ad.name}`);
+            }
+        }
+    });
+    
+    const newHotels = [...ads, ...properties];
+
+    if (isLoadingMore) {
+        // Append to existing hotels
+        allLoadedHotels = [...allLoadedHotels, ...newHotels];
+    } else {
+        // New search - reset
+        allLoadedHotels = newHotels;
+        // Store the total results from the initial search
+        currentHotelData = data;
+    }
+
+    // Remove duplicates based on hotel name and coordinates
+    const uniqueHotels = [];
+    const seenHotels = new Set();
+
+    allLoadedHotels.forEach(hotel => {
+        const identifier = `${hotel.name}-${hotel.gps_coordinates?.latitude}-${hotel.gps_coordinates?.longitude}`;
+        if (!seenHotels.has(identifier)) {
+            seenHotels.add(identifier);
+            uniqueHotels.push(hotel);
+        }
+    });
+
+    allLoadedHotels = uniqueHotels;
+    console.log(`After deduplication: ${uniqueHotels.length} unique hotels`);
+
+    // Check for pagination
+    nextPageToken = data.serpapi_pagination?.next_page_token || null;
+
+    // Use the original search's total results if available, otherwise use current data
+    const totalResults = (currentHotelData?.search_information?.total_results) ||
+                        (data.search_information?.total_results) ||
+                        allLoadedHotels.length;
+
+    console.log(`Loaded ${allLoadedHotels.length} hotels, Total available: ${totalResults}, Next token:`, nextPageToken);
+
+    if (allLoadedHotels.length === 0) {
+        flightResults.innerHTML = '<p class="no-results">No hotels found. Try different dates or location.</p>';
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    if (isLoadingMore) {
+        // Only update the results count and add new hotel cards
+        const resultsCount = document.querySelector('.results-count');
+        if (resultsCount) {
+            resultsCount.textContent = `Showing ${allLoadedHotels.length} of ${totalResults.toLocaleString()} hotel${totalResults !== 1 ? 's' : ''}`;
+        }
+
+        // Remove the old "Load More" button container
+        const oldShowMoreContainer = document.querySelector('.show-more-container');
+        if (oldShowMoreContainer) {
+            oldShowMoreContainer.remove();
+        }
+
+        // Append new hotel cards before the button position
+        const newHotelsStartIndex = allLoadedHotels.length - newHotels.length;
+        const newHotelsHtml = newHotels.map((hotel, index) =>
+            createHotelCard(hotel, false)
+        ).join('');
+
+        // Insert new hotels before adding the button back
+        flightResults.insertAdjacentHTML('beforeend', newHotelsHtml);
+
+        // Add "Load More Hotels" button if there are more pages
+        if (nextPageToken) {
+            const buttonHtml = `
+                <div class="show-more-container">
+                    <button class="show-more-btn" onclick="loadMoreHotels()" id="loadMoreHotelsBtn">
+                        Load More Hotels (${(totalResults - allLoadedHotels.length).toLocaleString()} remaining)
+                    </button>
+                </div>
+            `;
+            flightResults.insertAdjacentHTML('beforeend', buttonHtml);
+        }
+    } else {
+        // Initial load - build complete HTML
+        let html = `<div class="results-count">Showing ${allLoadedHotels.length} of ${totalResults.toLocaleString()} hotel${totalResults !== 1 ? 's' : ''}</div>`;
+        html += allLoadedHotels.map((hotel, index) => createHotelCard(hotel, index < 3)).join('');
+
+        // Add "Load More Hotels" button if there are more pages
+        if (nextPageToken) {
+            html += `
+                <div class="show-more-container">
+                    <button class="show-more-btn" onclick="loadMoreHotels()" id="loadMoreHotelsBtn">
+                        Load More Hotels (${(totalResults - allLoadedHotels.length).toLocaleString()} remaining)
+                    </button>
+                </div>
+            `;
+        }
+
+        flightResults.innerHTML = html;
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Load more hotels
+async function loadMoreHotels() {
+    if (!nextPageToken || isLoadingMoreHotels || !currentHotelSearchParams) return;
+
+    isLoadingMoreHotels = true;
+    const button = document.getElementById('loadMoreHotelsBtn');
+    if (button) {
+        button.textContent = 'Loading...';
+        button.disabled = true;
+    }
+
+    try {
+        const params = {
+            ...currentHotelSearchParams,
+            nextPageToken: nextPageToken
+        };
+
+        const response = await fetch('/api/search-hotels', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to fetch more hotels');
+        }
+
+        displayHotelResults(result, true);
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        isLoadingMoreHotels = false;
+    }
+}
+
+window.loadMoreHotels = loadMoreHotels;

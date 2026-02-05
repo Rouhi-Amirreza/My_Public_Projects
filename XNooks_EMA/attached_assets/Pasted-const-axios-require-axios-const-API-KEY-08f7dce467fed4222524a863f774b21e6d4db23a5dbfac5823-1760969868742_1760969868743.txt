@@ -1,0 +1,128 @@
+const axios = require('axios');
+
+const API_KEY = '08f7dce467fed4222524a863f774b21e6d4db23a5dbfac5823388274c55dccf6';
+const SERPAPI_ENDPOINT = 'https://serpapi.com/search.json';
+
+/**
+ * Search for hotels
+ */
+async function searchHotels(params) {
+  const {
+    location,
+    checkInDate,
+    checkOutDate,
+    adults,
+    children,
+    sortBy,
+    rating,
+    minPrice,
+    maxPrice,
+    hotelClass,
+    propertyType,
+    freeCancellation,
+    specialOffers,
+    ecoCertified,
+    nextPageToken
+  } = params;
+
+  // Build SerpApi parameters
+  const searchParams = {
+    engine: 'google_hotels',
+    api_key: API_KEY,
+    hl: 'en',
+    currency: 'USD',
+    gl: 'us'
+  };
+
+  // If pagination token is provided, use it
+  if (nextPageToken) {
+    searchParams.next_page_token = nextPageToken;
+    searchParams.q = location;
+    searchParams.check_in_date = checkInDate;
+    searchParams.check_out_date = checkOutDate;
+    searchParams.adults = adults || 2;
+    searchParams.children = children || 0;
+  } else {
+    searchParams.q = location;
+    searchParams.check_in_date = checkInDate;
+    searchParams.check_out_date = checkOutDate;
+    searchParams.adults = adults || 2;
+    searchParams.children = children || 0;
+  }
+
+  // Add optional filters
+  if (sortBy) searchParams.sort_by = sortBy;
+  if (rating) searchParams.rating = rating;
+  if (minPrice) searchParams.min_price = minPrice;
+  if (maxPrice) searchParams.max_price = maxPrice;
+  if (hotelClass && hotelClass.length > 0) searchParams.hotel_class = hotelClass.join(',');
+  if (propertyType === 'vacation_rentals') searchParams.vacation_rentals = true;
+  if (freeCancellation) searchParams.free_cancellation = true;
+  if (specialOffers) searchParams.special_offers = true;
+  if (ecoCertified) searchParams.eco_certified = true;
+
+  console.log('Hotel search parameters:', searchParams);
+
+  // Make request to SerpApi
+  const response = await axios.get(SERPAPI_ENDPOINT, { params: searchParams });
+  const data = response.data;
+
+  console.log('Number of properties:', data.properties?.length);
+  console.log('Number of ads:', data.ads?.length);
+
+  return data;
+}
+
+/**
+ * Get hotel details
+ */
+async function getHotelDetails(params) {
+  const {
+    propertyToken,
+    location,
+    checkInDate,
+    checkOutDate,
+    adults,
+    children
+  } = params;
+
+  console.log('Fetching hotel details:', { propertyToken, location, checkInDate, checkOutDate });
+
+  if (!propertyToken) {
+    throw new Error('Property token is required');
+  }
+
+  // Build SerpApi parameters
+  const searchParams = {
+    engine: 'google_hotels',
+    api_key: API_KEY,
+    hl: 'en',
+    currency: 'USD',
+    gl: 'us',
+    property_token: propertyToken
+  };
+
+  // Add location and dates if provided
+  if (location) searchParams.q = location;
+  if (checkInDate) searchParams.check_in_date = checkInDate;
+  if (checkOutDate) searchParams.check_out_date = checkOutDate;
+  if (adults) searchParams.adults = adults;
+  if (children) searchParams.children = children;
+
+  console.log('Fetching hotel details with params:', searchParams);
+
+  // Make request to SerpApi
+  const response = await axios.get(SERPAPI_ENDPOINT, { params: searchParams });
+  const data = response.data;
+
+  console.log('Hotel details fetched successfully');
+
+  return data;
+}
+
+module.exports = {
+  searchHotels,
+  getHotelDetails
+};
+
+

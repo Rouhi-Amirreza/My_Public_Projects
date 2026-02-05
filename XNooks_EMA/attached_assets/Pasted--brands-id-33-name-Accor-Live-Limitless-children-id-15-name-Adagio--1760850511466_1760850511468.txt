@@ -1,0 +1,678 @@
+"brands":
+[
+{
+"id":
+33,
+"name":
+"Accor Live Limitless",
+"children":
+[
+{
+"id":
+15,
+"name":
+"Adagio"
+},
+{
+"id":
+8,
+"name":
+"Fairmont Hotels and Resorts"
+},
+{
+"id":
+451,
+"name":
+"Hyde"
+},
+{
+"id":
+21,
+"name":
+"Ibis"
+},
+{
+"id":
+13,
+"name":
+"Ibis Budget"
+},
+{
+"id":
+103,
+"name":
+"Ibis Styles"
+},
+{
+"id":
+94,
+"name":
+"Mama Shelter"
+},
+{
+"id":
+91,
+"name":
+"Mercure"
+},
+{
+"id":
+47,
+"name":
+"Novotel"
+},
+{
+"id":
+90,
+"name":
+"Pullman Hotels and Resorts"
+},
+{
+"id":
+268,
+"name":
+"Raffles"
+},
+{
+"id":
+84,
+"name":
+"Sofitel"
+},
+{
+"id":
+374,
+"name":
+"Tribe"
+}
+]
+},
+{
+"id":
+18,
+"name":
+"Best Western International",
+"children":
+[
+{
+"id":
+155,
+"name":
+"Best Western"
+},
+{
+"id":
+104,
+"name":
+"Best Western Plus"
+},
+{
+"id":
+255,
+"name":
+"Best Western Signature Collection"
+},
+{
+"id":
+109,
+"name":
+"SureStay Collection"
+}
+]
+},
+{
+"id":
+258,
+"name":
+"Bvlgari"
+},
+{
+"id":
+20,
+"name":
+"Choice Hotels",
+"children":
+[
+{
+"id":
+27,
+"name":
+"Comfort"
+},
+{
+"id":
+82,
+"name":
+"Quality Inn"
+}
+]
+},
+{
+"id":
+466,
+"name":
+"Fattal Hotel Group",
+"children":
+[
+{
+"id":
+354,
+"name":
+"Leonardo Hotels"
+},
+{
+"id":
+467,
+"name":
+"NYX hotels"
+}
+]
+},
+{
+"id":
+289,
+"name":
+"Four Seasons"
+},
+{
+"id":
+313,
+"name":
+"H10 Hotels Group",
+"children":
+[
+{
+"id":
+336,
+"name":
+"H10 Hotels"
+}
+]
+},
+{
+"id":
+28,
+"name":
+"Hilton Honors",
+"children":
+[
+{
+"id":
+114,
+"name":
+"Canopy"
+},
+{
+"id":
+7,
+"name":
+"Conrad"
+},
+{
+"id":
+151,
+"name":
+"Curio Collection"
+},
+{
+"id":
+81,
+"name":
+"DoubleTree by Hilton"
+},
+{
+"id":
+115,
+"name":
+"Hampton by Hilton"
+},
+{
+"id":
+71,
+"name":
+"Hilton Garden Inn"
+},
+{
+"id":
+54,
+"name":
+"Hilton Hotels & Resorts"
+},
+{
+"id":
+406,
+"name":
+"Spark"
+},
+{
+"id":
+285,
+"name":
+"Tapestry Collection"
+},
+{
+"id":
+41,
+"name":
+"Waldorf Astoria"
+}
+]
+},
+{
+"id":
+37,
+"name":
+"Hyatt",
+"children":
+[
+{
+"id":
+116,
+"name":
+"Andaz"
+},
+{
+"id":
+120,
+"name":
+"Hyatt House"
+},
+{
+"id":
+121,
+"name":
+"Hyatt Place"
+},
+{
+"id":
+122,
+"name":
+"Hyatt Regency"
+},
+{
+"id":
+118,
+"name":
+"Park Hyatt"
+},
+{
+"id":
+262,
+"name":
+"Unbound Collection"
+}
+]
+},
+{
+"id":
+202,
+"name":
+"IHCL",
+"children":
+[
+{
+"id":
+203,
+"name":
+"Taj Hotels"
+}
+]
+},
+{
+"id":
+17,
+"name":
+"IHG Hotels & Resorts",
+"children":
+[
+{
+"id":
+42,
+"name":
+"Crowne Plaza"
+},
+{
+"id":
+64,
+"name":
+"Holiday Inn"
+},
+{
+"id":
+56,
+"name":
+"Holiday Inn Express"
+},
+{
+"id":
+87,
+"name":
+"Hotel Indigo"
+},
+{
+"id":
+2,
+"name":
+"InterContinental Hotels & Resorts"
+},
+{
+"id":
+127,
+"name":
+"Kimpton Hotels & Restaurants"
+},
+{
+"id":
+297,
+"name":
+"Regent"
+},
+{
+"id":
+389,
+"name":
+"Six Senses"
+},
+{
+"id":
+43,
+"name":
+"Staybridge Suites"
+},
+{
+"id":
+298,
+"name":
+"Voco"
+}
+]
+},
+{
+"id":
+332,
+"name":
+"Jumeirah Hotels and Resorts"
+},
+{
+"id":
+46,
+"name":
+"Marriott Bonvoy",
+"children":
+[
+{
+"id":
+60,
+"name":
+"Aloft Hotels"
+},
+{
+"id":
+59,
+"name":
+"Autograph Collection"
+},
+{
+"id":
+86,
+"name":
+"Courtyard by Marriott"
+},
+{
+"id":
+153,
+"name":
+"Delta"
+},
+{
+"id":
+287,
+"name":
+"Design Hotels"
+},
+{
+"id":
+256,
+"name":
+"Edition"
+},
+{
+"id":
+415,
+"name":
+"Four Points Flex by Sheraton"
+},
+{
+"id":
+26,
+"name":
+"JW Marriott Hotels"
+},
+{
+"id":
+257,
+"name":
+"Marriott Executive Apartments"
+},
+{
+"id":
+61,
+"name":
+"Marriott Hotels & Resorts"
+},
+{
+"id":
+129,
+"name":
+"Moxy"
+},
+{
+"id":
+131,
+"name":
+"Renaissance Hotels"
+},
+{
+"id":
+75,
+"name":
+"Residence Inn by Marriott"
+},
+{
+"id":
+12,
+"name":
+"Sheraton Hotels and Resorts"
+},
+{
+"id":
+143,
+"name":
+"The Luxury Collection"
+},
+{
+"id":
+137,
+"name":
+"W Hotels"
+},
+{
+"id":
+39,
+"name":
+"Westin Hotels & Resorts"
+}
+]
+},
+{
+"id":
+174,
+"name":
+"Melia Hotels International",
+"children":
+[
+{
+"id":
+176,
+"name":
+"ME by Melia"
+},
+{
+"id":
+178,
+"name":
+"Melia Hotels & Resorts"
+}
+]
+},
+{
+"id":
+167,
+"name":
+"Motel One"
+},
+{
+"id":
+169,
+"name":
+"NH Hotel Group",
+"children":
+[
+{
+"id":
+172,
+"name":
+"NHow Hotels"
+}
+]
+},
+{
+"id":
+353,
+"name":
+"OYO",
+"children":
+[
+{
+"id":
+99,
+"name":
+"OYO Rooms"
+},
+{
+"id":
+350,
+"name":
+"OYO Townhouse"
+}
+]
+},
+{
+"id":
+445,
+"name":
+"Premier Inn Hotels",
+"children":
+[
+{
+"id":
+266,
+"name":
+"Hub by Premier Inn"
+},
+{
+"id":
+70,
+"name":
+"Premier Inn"
+}
+]
+},
+{
+"id":
+80,
+"name":
+"Radisson Hotel Group",
+"children":
+[
+{
+"id":
+45,
+"name":
+"Park Plaza"
+},
+{
+"id":
+76,
+"name":
+"Radisson"
+},
+{
+"id":
+79,
+"name":
+"Radisson Blu"
+},
+{
+"id":
+264,
+"name":
+"Radisson Collection"
+},
+{
+"id":
+133,
+"name":
+"Radisson Red"
+}
+]
+},
+{
+"id":
+163,
+"name":
+"RIU Hotels & Resorts",
+"children":
+[
+{
+"id":
+164,
+"name":
+"Plaza by RIU"
+}
+]
+},
+{
+"id":
+57,
+"name":
+"Travelodge UK"
+},
+{
+"id":
+53,
+"name":
+"Wyndham Hotels & Resorts",
+"children":
+[
+{
+"id":
+19,
+"name":
+"Days Inn"
+},
+{
+"id":
+50,
+"name":
+"Ramada"
+},
+{
+"id":
+150,
+"name":
+"Wyndham"
+}
+]
+}
+],

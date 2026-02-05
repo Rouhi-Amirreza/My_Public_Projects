@@ -1,0 +1,548 @@
+
+// Create hotel card
+function createHotelCard(hotel, isTopResult) {
+    const name = hotel.name || 'Unknown Hotel';
+    const type = hotel.type || 'hotel';
+    const rating = hotel.overall_rating || 0;
+    const reviews = hotel.reviews || 0;
+    const hotelClass = hotel.hotel_class || hotel.extracted_hotel_class || 0;
+    const thumbnail = hotel.thumbnail || (hotel.images && hotel.images[0]?.thumbnail) || '';
+
+    // Price handling
+    const pricePerNight = hotel.extracted_price || hotel.rate_per_night?.extracted_lowest || 0;
+    const totalPrice = hotel.total_rate?.extracted_lowest || pricePerNight;
+    const beforeTaxes = hotel.rate_per_night?.extracted_before_taxes_fees || pricePerNight;
+
+    const amenities = hotel.amenities || [];
+    const freeCancellation = hotel.free_cancellation;
+    const ecoCertified = hotel.eco_certified;
+    const sponsored = hotel.sponsored;
+    const locationRating = hotel.location_rating;
+    const checkInTime = hotel.check_in_time || 'Not specified';
+    const checkOutTime = hotel.check_out_time || 'Not specified';
+    const essentialInfo = hotel.essential_info || [];
+    const nearbyPlaces = hotel.nearby_places || [];
+
+    // Get all price sources
+    const prices = hotel.prices || [];
+    const hasMultiplePrices = prices.length > 0;
+
+    // For ads: use the ad's link and source directly (price matches the ad)
+    // For properties: build a Google Hotels link with the search dates
+    const isAd = !!hotel.source; // Ads have a 'source' field
+    const mainSource = hotel.source;
+
+    // For properties, build a Google Hotels URL with the search dates
+    let mainLink = hotel.link;
+    if (!isAd && hotel.property_token && currentHotelSearchParams) {
+        // Build Google Hotels URL using the standard parameters from the documentation
+        // Format: https://www.google.com/travel/hotels?q=Location&check_in_date=YYYY-MM-DD&check_out_date=YYYY-MM-DD&htid=token
+
+        const checkIn = currentHotelSearchParams.checkInDate; // YYYY-MM-DD format
+        const checkOut = currentHotelSearchParams.checkOutDate; // YYYY-MM-DD format
+        const adults = parseInt(currentHotelSearchParams.adults) || 2;
+        const children = parseInt(currentHotelSearchParams.children) || 0;
+
+        // Build simple, clean URL parameters
+        const searchParams = new URLSearchParams();
+        searchParams.append('q', currentHotelSearchParams.location);
+        searchParams.append('check_in_date', checkIn);
+        searchParams.append('check_out_date', checkOut);
+        searchParams.append('adults', adults.toString());
+
+        if (children > 0) {
+            searchParams.append('children', children.toString());
+        }
+
+        // Add the hotel property token
+        searchParams.append('htid', hotel.property_token);
+
+        // Standard localization parameters
+        searchParams.append('hl', 'en');
+        searchParams.append('gl', 'us');
+        searchParams.append('currency', 'USD');
+
+        mainLink = `https://www.google.com/travel/hotels?${searchParams.toString()}`;
+    }
+
+    // Generate unique ID for this hotel card
+    const hotelId = 'hotel-' + Math.random().toString(36).substr(2, 9);
+
+    console.log(`Hotel: ${name}, IsAd: ${isAd}, Prices: ${prices.length}, Link:`, mainLink);
+
+    return `
+        <div class="hotel-card ${isTopResult ? 'top-result' : ''} ${sponsored ? 'sponsored' : ''}">
+            ${sponsored ? '<div class="sponsored-badge">Sponsored</div>' : ''}
+            ${isTopResult ? '<div class="best-badge">Top Result</div>' : ''}
+
+            <div class="hotel-main-info">
+                ${thumbnail ? `<img src="${thumbnail}" alt="${name}" class="hotel-thumbnail">` : ''}
+
+                <div class="hotel-details">
+                    <div class="hotel-header">
+                        <h3 class="hotel-name">${name}</h3>
+                        ${ecoCertified ? '<span class="eco-badge">Eco Certified</span>' : ''}
+                    </div>
+
+                    <div class="hotel-meta">
+                        ${hotelClass ? `<span class="hotel-class">${'⭐'.repeat(hotelClass)} ${hotelClass}-Star</span>` : ''}
+                        <span class="property-type">${type === 'vacation rental' ? 'Vacation Rental' : 'Hotel'}</span>
+                    </div>
+
+                    <div class="rating-section">
+                        ${rating > 0 ? `
+                            <div class="rating-badge">${rating.toFixed(1)} ⭐</div>
+                            <span class="review-count">(${reviews.toLocaleString()} reviews)</span>
+                        ` : '<span class="no-rating">No rating yet</span>'}
+                        ${locationRating ? `<span class="location-rating">Location: ${locationRating.toFixed(1)}/5</span>` : ''}
+                    </div>
+
+                    ${essentialInfo.length > 0 ? `
+                        <div class="essential-info">
+                            ${essentialInfo.slice(0, 4).map(info => `<span class="info-badge">${info}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${amenities.length > 0 ? `
+                        <div class="hotel-amenities">
+                            ${amenities.slice(0, 8).map(amenity => `<span class="amenity-tag">${amenity}</span>`).join('')}
+                            ${amenities.length > 8 ? `<span class="more-amenities">+${amenities.length - 8} more</span>` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${nearbyPlaces.length > 0 ? `
+                        <div class="nearby-places">
+                            <strong>Nearby:</strong> ${nearbyPlaces[0].name}
+                            ${nearbyPlaces[0].transportations && nearbyPlaces[0].transportations[0] ?
+                                ` (${nearbyPlaces[0].transportations[0].duration} by ${nearbyPlaces[0].transportations[0].type})` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="hotel-pricing">
+                    <div class="price-main">
+                        <div class="price-label">Total Price</div>
+                        <div class="price-value">$${totalPrice}</div>
+                        ${mainSource ? `<div class="price-source">via ${mainSource}</div>` : ''}
+                    </div>
+                    <div class="price-details">
+                        <div>Per Night: $${pricePerNight}</div>
+                        ${beforeTaxes !== pricePerNight ? `<div class="before-taxes">$${beforeTaxes} before taxes</div>` : ''}
+                    </div>
+                    <div class="check-times">
+                        <small>Check-in: ${checkInTime}</small>
+                        <small>Check-out: ${checkOutTime}</small>
+                    </div>
+                    ${freeCancellation ? '<div class="free-cancel-badge">Free Cancellation</div>' : ''}
+
+                    ${isAd && mainLink ? `
+                        <div class="price-note">Price shown is from ${mainSource}</div>
+                        <a href="${mainLink}" target="_blank" class="book-now-btn">
+                            View
+                        </a>
+                    ` : ''}
+
+                    ${!isAd && hasMultiplePrices ? `
+                        <div class="price-note">Showing lowest price found</div>
+                    ` : ''}
+
+                    ${hasMultiplePrices ? `
+                        <button class="view-prices-btn" onclick="togglePrices('${hotelId}')">
+                            ${isAd ? 'View Other' : 'View All'} ${prices.length} Price Option${prices.length > 1 ? 's' : ''}
+                        </button>
+                        <div id="${hotelId}" class="all-prices-section" style="display: none;">
+                            <h4 style="margin: 10px 0; font-size: 0.9rem; color: #333;">Available from ${prices.length} Provider${prices.length > 1 ? 's' : ''}:</h4>
+                            ${prices.map((price, idx) => {
+                                const pricePerNightVal = price.rate_per_night?.extracted_lowest || 0;
+                                const beforeTaxesVal = price.rate_per_night?.extracted_before_taxes_fees;
+                                return `
+                                <div class="price-option">
+                                    <div class="price-option-header">
+                                        ${price.logo ? `<img src="${price.logo}" alt="${price.source}" class="source-logo">` : ''}
+                                        <div class="price-option-info">
+                                            <span class="source-name">${price.source || 'Provider ' + (idx + 1)}</span>
+                                            ${price.num_guests ? `<div class="price-option-guests">${price.num_guests} guests</div>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="price-option-details">
+                                        <div class="price-option-price">$${pricePerNightVal}/night</div>
+                                        ${beforeTaxesVal && beforeTaxesVal !== pricePerNightVal ?
+                                            `<div class="price-option-taxes">$${beforeTaxesVal} before taxes</div>` : ''}
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                            <div class="price-disclaimer">Note: Click "Book Now" or visit Google Hotels directly to see provider-specific links with correct dates</div>
+                        </div>
+                    ` : ''}
+
+                    ${!isAd && mainLink ? `
+                        <a href="${mainLink}" target="_blank" class="book-now-btn secondary">
+                            View on Official Site
+                        </a>
+                    ` : ''}
+                    
+                    ${hotel.property_token ? `
+                        <button class="view-details-btn" data-property-token="${hotel.property_token}" data-hotel-id="${hotelId}" onclick="viewHotelDetailsFromButton(this)">
+                            📋 View Full Details
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle price display
+function togglePrices(hotelId) {
+    const pricesSection = document.getElementById(hotelId);
+    const isVisible = pricesSection.style.display !== 'none';
+    pricesSection.style.display = isVisible ? 'none' : 'block';
+
+    const button = event.target;
+    button.textContent = isVisible ? `View All ${pricesSection.children.length} Prices` : 'Hide Prices';
+}
+
+window.togglePrices = togglePrices;
+
+// View hotel details from button click
+function viewHotelDetailsFromButton(button) {
+    const propertyToken = button.getAttribute('data-property-token');
+    const hotelId = button.getAttribute('data-hotel-id');
+    viewHotelDetails(propertyToken, hotelId);
+}
+
+window.viewHotelDetailsFromButton = viewHotelDetailsFromButton;
+
+// View hotel details
+async function viewHotelDetails(propertyToken, hotelId) {
+    // Show loading modal
+    showHotelDetailsModal('Loading hotel details...', true);
+    
+    try {
+        console.log('Fetching details for property token:', propertyToken);
+        
+        const response = await fetch('/api/hotel-details', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                propertyToken: propertyToken,
+                location: currentHotelSearchParams?.location,
+                checkInDate: currentHotelSearchParams?.checkInDate,
+                checkOutDate: currentHotelSearchParams?.checkOutDate,
+                adults: currentHotelSearchParams?.adults,
+                children: currentHotelSearchParams?.children
+            })
+        });
+
+        // Check if response is ok before parsing
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('API Error Response:', errorText);
+            throw new Error(`API returned status ${response.status}: ${errorText.substring(0, 200)}`);
+        }
+
+        // Try to parse JSON
+        const data = await response.json();
+
+        console.log('Hotel details data:', data);
+        displayHotelDetailsModal(data);
+    } catch (error) {
+        console.error('Error fetching hotel details:', error);
+        showHotelDetailsModal(`Error: ${error.message}`, false);
+    }
+}
+
+window.viewHotelDetails = viewHotelDetails;
+
+// Display hotel details in modal
+function displayHotelDetailsModal(data) {
+    const modal = document.getElementById('hotelDetailsModal') || createHotelDetailsModal();
+    const content = modal.querySelector('.modal-content-inner');
+    
+    // Extract all available data
+    const name = data.name || 'Hotel Details';
+    const type = data.type || 'Hotel';
+    const description = data.description || '';
+    const rating = data.overall_rating || 0;
+    const reviews = data.reviews || 0;
+    const hotelClass = data.hotel_class || 0;
+    const address = data.address || 'Address not available';
+    const link = data.link || '';
+    const phone = data.phone || 'Not available';
+    const checkInTime = data.check_in_time || 'Not specified';
+    const checkOutTime = data.check_out_time || 'Not specified';
+    
+    // Images
+    const images = data.images || [];
+    
+    // Amenities
+    const amenities = data.amenities || [];
+    
+    // Ratings breakdown
+    const ratings = data.ratings || [];
+    
+    // Reviews
+    const userReviews = data.user_reviews || [];
+    
+    // Prices
+    const prices = data.prices || [];
+    
+    // Nearby places
+    const nearbyPlaces = data.nearby_places || [];
+    
+    // Essential info
+    const essentialInfo = data.essential_info || [];
+    
+    // Service options
+    const serviceOptions = data.service_options || {};
+    
+    // Highlights
+    const highlights = data.highlights || [];
+    
+    // Location coordinates
+    const gpsCoordinates = data.gps_coordinates || null;
+    
+    let html = `
+        <div class="hotel-details-header">
+            <h2>${name}</h2>
+            ${hotelClass ? `<div class="hotel-stars">${'⭐'.repeat(hotelClass)} ${hotelClass}-Star ${type}</div>` : ''}
+            ${rating > 0 ? `
+                <div class="hotel-rating-big">
+                    <span class="rating-number">${rating.toFixed(1)}</span>
+                    <span class="rating-stars">⭐</span>
+                    <span class="rating-reviews">(${reviews.toLocaleString()} reviews)</span>
+                </div>
+            ` : ''}
+        </div>
+        
+        <div class="hotel-details-body">
+            ${description ? `
+                <section class="details-section">
+                    <h3>📝 Description</h3>
+                    <p class="hotel-description">${description}</p>
+                </section>
+            ` : ''}
+            
+            ${images.length > 0 ? `
+                <section class="details-section">
+                    <h3>📸 Photos</h3>
+                    <div class="hotel-images-grid">
+                        ${images.slice(0, 12).map(img => `
+                            <div class="hotel-image-item">
+                                <img src="${img.thumbnail || img.original_image}" alt="${img.title || name}" onclick="window.open('${img.original_image}', '_blank')">
+                                ${img.title ? `<div class="image-title">${img.title}</div>` : ''}
+                            </div>
+                        `).join('')}
+                        ${images.length > 12 ? `<div class="more-images">+${images.length - 12} more photos</div>` : ''}
+                    </div>
+                </section>
+            ` : ''}
+            
+            <section class="details-section">
+                <h3>📍 Location & Contact</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Address:</strong> ${address}
+                    </div>
+                    <div class="info-item">
+                        <strong>Phone:</strong> ${phone}
+                    </div>
+                    <div class="info-item">
+                        <strong>Check-in:</strong> ${checkInTime}
+                    </div>
+                    <div class="info-item">
+                        <strong>Check-out:</strong> ${checkOutTime}
+                    </div>
+                    ${gpsCoordinates ? `
+                        <div class="info-item full-width">
+                            <strong>Coordinates:</strong> ${gpsCoordinates.latitude}, ${gpsCoordinates.longitude}
+                            <a href="https://www.google.com/maps?q=${gpsCoordinates.latitude},${gpsCoordinates.longitude}" target="_blank" class="map-link">View on Map</a>
+                        </div>
+                    ` : ''}
+                </div>
+            </section>
+            
+            ${essentialInfo.length > 0 ? `
+                <section class="details-section">
+                    <h3>ℹ️ Essential Information</h3>
+                    <div class="essential-info-grid">
+                        ${essentialInfo.map(info => `<div class="info-badge">${info}</div>`).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${Object.keys(serviceOptions).length > 0 ? `
+                <section class="details-section">
+                    <h3>🔧 Service Options</h3>
+                    <div class="service-options-grid">
+                        ${Object.entries(serviceOptions).map(([key, value]) => `
+                            <div class="service-option">
+                                <span class="service-icon">${value ? '✅' : '❌'}</span>
+                                <span class="service-name">${key.replace(/_/g, ' ')}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${highlights.length > 0 ? `
+                <section class="details-section">
+                    <h3>✨ Highlights</h3>
+                    <div class="highlights-grid">
+                        ${highlights.map(highlight => `
+                            <div class="highlight-item">
+                                ${highlight.title ? `<strong>${highlight.title}:</strong> ` : ''}
+                                ${highlight.description || highlight}
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${amenities.length > 0 ? `
+                <section class="details-section">
+                    <h3>🏨 Amenities</h3>
+                    <div class="amenities-grid">
+                        ${amenities.map(amenity => `<div class="amenity-badge">${amenity}</div>`).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${ratings.length > 0 ? `
+                <section class="details-section">
+                    <h3>📊 Ratings Breakdown</h3>
+                    <div class="ratings-breakdown">
+                        ${ratings.map(rating => `
+                            <div class="rating-item">
+                                <div class="rating-label">${rating.category || rating.type}</div>
+                                <div class="rating-bar-container">
+                                    <div class="rating-bar" style="width: ${(rating.rating / 5) * 100}%"></div>
+                                </div>
+                                <div class="rating-value">${rating.rating?.toFixed(1) || rating.score?.toFixed(1)}/5</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${nearbyPlaces.length > 0 ? `
+                <section class="details-section">
+                    <h3>🗺️ Nearby Places</h3>
+                    <div class="nearby-places-list">
+                        ${nearbyPlaces.slice(0, 10).map(place => `
+                            <div class="nearby-place-item">
+                                <div class="place-name">${place.name}</div>
+                                ${place.transportations && place.transportations[0] ? `
+                                    <div class="place-transport">
+                                        ${place.transportations[0].duration} by ${place.transportations[0].type}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${prices.length > 0 ? `
+                <section class="details-section">
+                    <h3>💰 Available Prices</h3>
+                    <div class="prices-list">
+                        ${prices.map((price, idx) => {
+                            const pricePerNight = price.rate_per_night?.extracted_lowest || 0;
+                            const totalPrice = price.total_rate?.extracted_lowest || pricePerNight;
+                            return `
+                            <div class="price-detail-item">
+                                ${price.logo ? `<img src="${price.logo}" alt="${price.source}" class="provider-logo">` : ''}
+                                <div class="price-detail-info">
+                                    <div class="provider-name">${price.source || 'Provider ' + (idx + 1)}</div>
+                                    <div class="price-amount">$${pricePerNight}/night</div>
+                                    ${totalPrice !== pricePerNight ? `<div class="price-total">Total: $${totalPrice}</div>` : ''}
+                                </div>
+                                ${price.link ? `
+                                    <a href="${price.link}" target="_blank" class="price-book-btn">Book</a>
+                                ` : ''}
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${userReviews.length > 0 ? `
+                <section class="details-section">
+                    <h3>💬 User Reviews</h3>
+                    <div class="reviews-list">
+                        ${userReviews.slice(0, 5).map(review => `
+                            <div class="review-item">
+                                <div class="review-header">
+                                    ${review.author ? `<strong>${review.author}</strong>` : 'Anonymous'}
+                                    ${review.rating ? `<span class="review-rating">${review.rating}⭐</span>` : ''}
+                                    ${review.date ? `<span class="review-date">${review.date}</span>` : ''}
+                                </div>
+                                ${review.snippet || review.text ? `
+                                    <div class="review-text">${review.snippet || review.text}</div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                        ${userReviews.length > 5 ? `<div class="more-reviews">+${userReviews.length - 5} more reviews</div>` : ''}
+                    </div>
+                </section>
+            ` : ''}
+            
+            ${link ? `
+                <section class="details-section">
+                    <a href="${link}" target="_blank" class="view-on-google-btn">
+                        View on Google Hotels
+                    </a>
+                </section>
+            ` : ''}
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    modal.style.display = 'flex';
+}
+
+// Create hotel details modal
+function createHotelDetailsModal() {
+    const modal = document.createElement('div');
+    modal.id = 'hotelDetailsModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Hotel Details</h2>
+                <button class="modal-close" onclick="closeHotelDetailsModal()">×</button>
+            </div>
+            <div class="modal-content-inner">
+                Loading...
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeHotelDetailsModal();
+        }
+    });
+    
+    return modal;
+}
+
+// Show hotel details modal with message
+function showHotelDetailsModal(message, isLoading) {
+    const modal = document.getElementById('hotelDetailsModal') || createHotelDetailsModal();
+    const content = modal.querySelector('.modal-content-inner');
+    content.innerHTML = `
+        <div class="modal-message ${isLoading ? 'loading' : 'error'}">
+            ${isLoading ? '<div class="loader"></div>' : ''}
+            <p>${message}</p>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}

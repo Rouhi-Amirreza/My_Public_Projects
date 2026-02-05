@@ -1,0 +1,114 @@
+Ok, now I want you to add a new page to the app called “Plan Optimizer” for expense management companies (specifically in the travel expense section).
+This page will help manage and optimize employees’ business trips.
+
+🔹 Core Functionality
+
+The user (agent or employee) should be able to:
+
+Enter their meetings, venues, or conferences, including:
+
+Meeting name
+
+Address and city
+
+Start date/time and end date/time
+
+The app should then find the best flights that:
+
+Satisfy all meeting time constraints
+
+Comply with company travel policies
+
+🔹 Settings to Include
+
+Add input fields for the following configurable settings:
+
+Driving Time to Airport
+
+Meeting Start Date & Time
+
+Meeting End Date & Time
+
+Arrival Flexibility (days before meeting):
+
+MinArrivalFlexibility (minimum days before)
+
+MaxArrivalFlexibility (maximum days before)
+
+Departure Flexibility (days after meeting):
+
+MinDepartureFlexibility (minimum days after)
+
+MaxDepartureFlexibility (maximum days after)
+
+🔹 Flight Filter Options
+
+Support the following optional filters (matching SerpAPI parameters):
+
+include_airlines → Include Airlines
+
+exclude_airlines → Exclude Airlines
+
+travel_class → Travel Class
+
+currency → Currency
+
+preferred_outbound_times → Preferred Outbound Times
+
+preferred_return_times → Preferred Return Times
+
+max_layover (minutes) → Max Layover Duration
+
+Refer to:
+
+SerpAPI Google Flights API
+
+SerpAPI Google Flights Airports
+
+In this regard, you can also use the settings we have in SerpAPI such as outbound_times and return_times, but apply them only to the exact day(s) that the meeting or venue occurs, to ensure flights match the meeting’s required time window.
+
+🔹 Logic & Architecture
+
+You can reuse the multi-city tab architecture, but modify the logic as follows:
+
+Find the first flight that satisfies:
+
+Meeting filters and company rules
+
+Arrival time < (meeting start time − driving time)
+
+Flight date within [meeting_date − MaxArrivalFlexibility, meeting_date − MinArrivalFlexibility]
+
+For subsequent meetings:
+
+Departure time of next flight must be after
+(previous meeting end time + driving time + 3 hours) (3 hours = airport buffer, configurable)
+
+Arrival time < (next meeting start time − driving time)
+
+Flight date within [next_meeting_date − MaxArrivalFlexibility, next_meeting_date − MinArrivalFlexibility]
+
+Time constraints apply only to meeting days.
+
+For example, if a meeting is on Oct 23 and ArrivalFlexibility = 1–2, flights arriving between Oct 21–22 are allowed any time,
+but if it’s on Oct 23, the flight must satisfy the meeting-time conditions.
+
+Continue this logic sequentially for all meetings.
+
+For each combination of flights satisfying all constraints, store and display the valid flight sets.
+
+✅ Output
+
+The app should display all valid flight combinations that meet:
+
+Time and flexibility constraints
+
+Company filters and travel policies
+
+Each combination should show:
+
+Departure/arrival times
+
+Total duration
+
+Airline, travel class, and layover details
